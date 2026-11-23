@@ -471,6 +471,22 @@ const CameraSensorProperties *CameraSensorProperties::get(const std::string &sen
 			},
 			.sensorDelays = { },
 		} },
+		{ "rs300", {
+			/* Mini2 / WN2 thermal module, 12 um microbolometer pitch. */
+			.unitCellSize = { 12000, 12000 },
+			.testPatternModes = { },
+			/*
+			 * The module ignores exposure, gain and blanking; the driver
+			 * accepts the controls only for libcamera. These are the
+			 * CameraSensor defaults, so behaviour does not change.
+			 */
+			.sensorDelays = {
+				.exposureDelay = 2,
+				.gainDelay = 1,
+				.vblankDelay = 2,
+				.hblankDelay = 2
+			},
+		} },
 		{ "vd56g3", {
 			.unitCellSize = { 2610, 2610 },
 			.testPatternModes = {
