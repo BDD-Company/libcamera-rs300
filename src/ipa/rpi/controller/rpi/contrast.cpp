@@ -53,6 +53,8 @@ int Contrast::read(const libcamera::YamlObject &params)
 	config_.hiHistogram = params["hi_histogram"].get<double>(0.95);
 	config_.hiLevel = params["hi_level"].get<double>(0.95);
 	config_.hiMax = params["hi_max"].get<double>(2000);
+	/* 0 gives a plain two-point stretch, as thermal images need. */
+	config_.ceKeepMedian = params["ce_keep_median"].get<int>(1);
 
 	config_.gammaCurve = params["gamma_curve"].get<ipa::Pwl>(ipa::Pwl{});
 	return config_.gammaCurve.empty() ? -EINVAL : 0;
@@ -119,8 +121,10 @@ ipa::Pwl computeStretchCurve(Histogram const &histogram,
 	 * Keep the mid-point (median) in the same place, though, to limit the
 	 * apparent amount of global brightness shift.
 	 */
-	double mid = histogram.quantile(0.5) * (65536 / histogram.bins());
-	enhance.append(mid, mid);
+	if (config.ceKeepMedian) {
+		double mid = histogram.quantile(0.5) * (65536 / histogram.bins());
+		enhance.append(mid, mid);
+	}
 
 	/*
 	 * If the top to the histogram is empty, try to pull the pixel values

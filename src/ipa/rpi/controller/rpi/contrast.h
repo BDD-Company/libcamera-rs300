@@ -27,6 +27,7 @@ struct ContrastConfig {
 	double hiHistogram;
 	double hiLevel;
 	double hiMax;
+	bool ceKeepMedian;
 	libcamera::ipa::Pwl gammaCurve;
 };
 
