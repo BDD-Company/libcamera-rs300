@@ -796,10 +796,22 @@ int PipelineHandlerBase::registerCamera(std::unique_ptr<RPi::CameraData> &camera
 	if (!data->sensor_)
 		return -EINVAL;
 
-	/* Populate the map of sensor supported formats and sizes. */
-	for (auto const mbusCode : data->sensor_->mbusCodes())
+	/*
+	 * Populate the map of sensor supported formats and sizes. Only raw
+	 * (Bayer or mono) formats can feed the ISP, so skip any others, such
+	 * as YUV formats from sensors with an on-chip processor.
+	 */
+	for (auto const mbusCode : data->sensor_->mbusCodes()) {
+		if (!BayerFormat::fromMbusCode(mbusCode).isValid())
+			continue;
 		data->sensorFormats_.emplace(mbusCode,
 					     data->sensor_->sizes(mbusCode));
+	}
+
+	if (data->sensorFormats_.empty()) {
+		LOG(RPI, Error) << "Sensor has no raw formats";
+		return -EINVAL;
+	}
 
 	/*
 	 * Enumerate all the Video Mux/Bridge devices across the sensor -> Fr
