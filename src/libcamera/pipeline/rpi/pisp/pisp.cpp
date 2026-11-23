@@ -1450,7 +1450,13 @@ int PiSPCameraData::platformConfigure(const RPi::RPiCameraConfiguration *rpiConf
 	 * contents to account for the HW missing this feature.
 	 */
 	cfe_[Cfe::Output0].clearFlags(StreamFlag::Needs16bitEndianSwap);
-	if (MediaBusFormatInfo::info(rpiConfig->sensorFormat_.code).bitsPerPixel == 16) {
+	/*
+	 * The rs300 thermal module sends 16-bit pixels least significant byte
+	 * first, so its buffers are already in the order the ISP and the
+	 * statistics expect. It needs no swap.
+	 */
+	if (MediaBusFormatInfo::info(rpiConfig->sensorFormat_.code).bitsPerPixel == 16 &&
+	    sensor_->model() != "rs300") {
 		cfe_[Cfe::Output0].setFlags(StreamFlag::Needs16bitEndianSwap);
 		LOG(RPI, Warning)
 			<< "The sensor is configured for a 16-bit output, statistics"
